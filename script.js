@@ -97,27 +97,48 @@
         return;
       }
 
-      // Disable button during "submit"
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const originalText = submitBtn.textContent;
-      submitBtn.disabled   = true;
-      submitBtn.textContent = 'Sending…';
+      // Gather form values
+      const email    = form.querySelector('#email');
+      const message  = form.querySelector('#message');
+      const services = Array.from(form.querySelectorAll('input[name="svc"]:checked'))
+                            .map(function (cb) { return cb.parentElement.textContent.trim(); });
 
-      // Simulate async submission (replace with real API call)
+      const sectorLabels = {
+        college: 'College / University',
+        school: 'School',
+        municipality: 'Municipality / Local Body',
+        other: 'Other Government Body'
+      };
+
+      // Build prefilled WhatsApp message
+      var lines = [
+        'Hi Bluesquare! I\'d like to get in touch.',
+        '',
+        'Name: ' + name.value.trim(),
+        'Organisation: ' + org.value.trim(),
+        'Phone: ' + phone.value.trim(),
+        'Email: ' + (email.value.trim() || 'Not provided'),
+        'Sector: ' + (sectorLabels[sector.value] || sector.value),
+        'Services Interested In: ' + (services.length ? services.join(', ') : 'Not specified'),
+        'Message: ' + (message.value.trim() || 'Not provided')
+      ];
+
+      var waText = encodeURIComponent(lines.join('\n'));
+      var waURL  = 'https://wa.me/919025410474?text=' + waText;
+
+      // Show success and open WhatsApp
+      successMsg.classList.add('show');
+      form.reset();
+      successMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
       setTimeout(function () {
-        submitBtn.disabled   = false;
-        submitBtn.textContent = originalText;
-        successMsg.classList.add('show');
-        form.reset();
+        window.open(waURL, '_blank', 'noopener');
+      }, 400);
 
-        // Scroll success message into view
-        successMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        // Hide success after 8 seconds
-        setTimeout(function () {
-          successMsg.classList.remove('show');
-        }, 8000);
-      }, 1200);
+      // Hide success after 8 seconds
+      setTimeout(function () {
+        successMsg.classList.remove('show');
+      }, 8000);
     });
 
     // Clear individual field error on input
